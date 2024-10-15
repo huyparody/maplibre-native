@@ -30,7 +30,7 @@ void Renderer::setObserver(RendererObserver* observer) {
 }
 
 void Renderer::render(const std::shared_ptr<UpdateParameters>& updateParameters) {
-    MLN_TRACE_FUNC()
+    MLN_TRACE_FUNC();
     assert(updateParameters);
     if (auto renderTree = impl->orchestrator.createRenderTree(updateParameters)) {
         renderTree->prepare();
@@ -138,6 +138,10 @@ void Renderer::setTileCacheEnabled(bool enable) {
     impl->orchestrator.setTileCacheEnabled(enable);
 }
 
+bool Renderer::getTileCacheEnabled() const {
+    return impl->orchestrator.getTileCacheEnabled();
+}
+
 void Renderer::reduceMemoryUse() {
     gfx::BackendScope guard{impl->backend};
     impl->reduceMemoryUse();
@@ -147,5 +151,11 @@ void Renderer::reduceMemoryUse() {
 void Renderer::clearData() {
     impl->orchestrator.clearData();
 }
+
+#if MLN_RENDER_BACKEND_OPENGL
+void Renderer::enableAndroidEmulatorGoldfishMitigation(bool enable) {
+    impl->orchestrator.enableAndroidEmulatorGoldfishMitigation(enable);
+}
+#endif
 
 } // namespace mbgl

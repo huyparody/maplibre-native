@@ -10,19 +10,27 @@ namespace mbgl {
 namespace vulkan {
 
 bool BufferAllocation::create(const VmaAllocationCreateInfo& allocInfo, const vk::BufferCreateInfo& bufferInfo) {
-    VkResult result = vmaCreateBuffer(
-        allocator, reinterpret_cast<const VkBufferCreateInfo*>(&bufferInfo), &allocInfo, &buffer, &allocation, nullptr);
+    VkBuffer buffer_;
+    VkResult result = vmaCreateBuffer(allocator,
+                                      reinterpret_cast<const VkBufferCreateInfo*>(&bufferInfo),
+                                      &allocInfo,
+                                      &buffer_,
+                                      &allocation,
+                                      nullptr);
 
     if (result != VK_SUCCESS) {
         return false;
     }
 
+    buffer = vk::Buffer(buffer_);
     return true;
 }
 
 void BufferAllocation::destroy() {
     if (mappedBuffer) vmaUnmapMemory(allocator, allocation);
-    vmaDestroyBuffer(allocator, buffer, allocation);
+    vmaDestroyBuffer(allocator, VkBuffer(buffer), allocation);
+
+    buffer = nullptr;
     mappedBuffer = nullptr;
 }
 
@@ -133,7 +141,7 @@ BufferResource& BufferResource::operator=(BufferResource&& other) noexcept {
 }
 
 void BufferResource::update(const void* newData, std::size_t updateSize, std::size_t offset) noexcept {
-    assert(size >= 0 && updateSize + offset <= size);
+    assert(updateSize + offset <= size);
     updateSize = std::min(updateSize, size - offset);
     if (updateSize <= 0) {
         return;
@@ -154,10 +162,6 @@ std::size_t BufferResource::getVulkanBufferOffset() const noexcept {
     if (bufferWindowSize > 0) return 0;
 
     return context.getCurrentFrameResourceIndex() * bufferWindowSize;
-}
-
-std::size_t BufferResource::getVulkanBufferSize() const noexcept {
-    return bufferWindowSize > 0 ? bufferWindowSize : size;
 }
 
 } // namespace vulkan

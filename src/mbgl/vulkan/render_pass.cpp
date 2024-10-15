@@ -8,8 +8,8 @@
 namespace mbgl {
 namespace vulkan {
 
-RenderPass::RenderPass(CommandEncoder& commandEncoder_, const char* name, const gfx::RenderPassDescriptor& descriptor)
-    : descriptor(descriptor),
+RenderPass::RenderPass(CommandEncoder& commandEncoder_, const char* name, const gfx::RenderPassDescriptor& descriptor_)
+    : descriptor(descriptor_),
       commandEncoder(commandEncoder_) {
     auto& resource = descriptor.renderable.getResource<RenderableResource>();
 
@@ -53,7 +53,7 @@ void RenderPass::clearStencil(uint32_t value) const {
                             .setAspectMask(vk::ImageAspectFlagBits::eStencil)
                             .setClearValue(vk::ClearDepthStencilValue(0.0f, value));
 
-    const auto& rect = vk::ClearRect().setBaseArrayLayer(0).setLayerCount(1).setRect(
+    const auto rect = vk::ClearRect().setBaseArrayLayer(0).setLayerCount(1).setRect(
         {{0, 0}, {extent.width, extent.height}});
 
     commandEncoder.getCommandBuffer()->clearAttachments(attach, rect);
